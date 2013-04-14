@@ -167,11 +167,6 @@
 
 - (BOOL)encodeReadySamplesFromOutput:(AVAssetReaderOutput *)output toInput:(AVAssetWriterInput *)input
 {
-    if (!self)
-    {
-        return NO;
-    }
-
     while (input.isReadyForMoreMediaData)
     {
         CMSampleBufferRef sampleBuffer = [output copyNextSampleBuffer];
