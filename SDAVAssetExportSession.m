@@ -255,6 +255,7 @@
 - (void)reset
 {
     _error = nil;
+    self.progress = 0;
     self.reader = nil;
     self.videoOutput = nil;
     self.audioOutput = nil;
