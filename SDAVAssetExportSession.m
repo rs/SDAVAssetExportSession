@@ -86,7 +86,7 @@
     //
     NSArray *videoTracks = [self.asset tracksWithMediaType:AVMediaTypeVideo];
     self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:nil];
-    self.videoOutput.shouldGroupAccessibilityChildren = NO;
+    self.videoOutput.alwaysCopiesSampleData = NO;
     self.videoOutput.videoComposition = self.videoComposition;
     if ([self.reader canAddOutput:self.videoOutput])
     {
