@@ -198,10 +198,13 @@
 {
     [self.writer finishWritingWithCompletionHandler:self.completionHandler];
 
-    if (self.writer.status == AVAssetWriterStatusFailed && self.completionHandler)
+    if (self.writer.status == AVAssetWriterStatusFailed)
     {
         [NSFileManager.defaultManager removeItemAtURL:self.outputURL error:nil];
-        self.completionHandler();
+        if (self.completionHandler)
+        {
+            self.completionHandler();
+        }
     }
 
     self.completionHandler = nil;
