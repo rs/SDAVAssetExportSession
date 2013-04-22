@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+@protocol SDAVAssetExportSessionDelegate;
+
+
 /**
  * An `SDAVAssetExportSession` object transcodes the contents of an AVAsset source object to create an output
  * of the form described by specified video and audio settings. It implements most of the API of Apple provided
@@ -26,6 +29,8 @@
  */
 
 @interface SDAVAssetExportSession : NSObject
+
+@property (nonatomic, weak) id<SDAVAssetExportSessionDelegate> delegate;
 
 /**
  * The asset with which the export session was initialized.
@@ -166,5 +171,12 @@
  * You can invoke this method when the export is running.
  */
 - (void)cancelExport;
+
+@end
+
+
+@protocol SDAVAssetExportSessionDelegate <NSObject>
+
+- (void)exportSession:(SDAVAssetExportSession *)exportSession renderFrame:(CVPixelBufferRef)pixelBuffer withPresentationTime:(CMTime)presentationTime toBuffer:(CVPixelBufferRef)renderBuffer;
 
 @end

@@ -16,6 +16,7 @@
 @property (nonatomic, strong) AVAssetReaderAudioMixOutput *audioOutput;
 @property (nonatomic, strong) AVAssetWriter *writer;
 @property (nonatomic, strong) AVAssetWriterInput *videoInput;
+@property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor  *videoPixelBufferAdaptor;
 @property (nonatomic, strong) AVAssetWriterInput *audioInput;
 @property (nonatomic, strong) dispatch_queue_t inputQueue;
 @property (nonatomic, strong) void (^completionHandler)();
@@ -103,7 +104,15 @@
     {
         [self.writer addInput:self.videoInput];
     }
-
+    NSDictionary *pixelBufferAttributes = @
+    {
+        (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
+        (id)kCVPixelBufferWidthKey: @(((AVAssetTrack *)videoTracks[0]).naturalSize.width),
+        (id)kCVPixelBufferHeightKey: @(((AVAssetTrack *)videoTracks[0]).naturalSize.height),
+        @"IOSurfaceOpenGLESTextureCompatibility": @YES,
+        @"IOSurfaceOpenGLESFBOCompatibility": @YES,
+    };
+    self.videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
 
     //
     //Audio output
@@ -172,17 +181,39 @@
         CMSampleBufferRef sampleBuffer = [output copyNextSampleBuffer];
         if (sampleBuffer)
         {
+            BOOL handled = NO;
+            BOOL error = NO;
             if (self.videoOutput == output)
             {
                 CMTime presTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(presTime) / duration;
+
+                if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
+                {
+                    CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
+                    CVPixelBufferRef renderBuffer = NULL;
+                    CVPixelBufferPoolCreatePixelBuffer(NULL, self.videoPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
+                    CVPixelBufferLockBaseAddress(renderBuffer, 0);
+                    [self.delegate exportSession:self renderFrame:pixelBuffer withPresentationTime:presTime toBuffer:renderBuffer];
+                    CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
+                    if (![self.videoPixelBufferAdaptor appendPixelBuffer:renderBuffer withPresentationTime:presTime])
+                    {
+                        error = YES;
+                    }
+                    CVPixelBufferRelease(renderBuffer);
+                    handled = YES;
+                }
             }
-            if (![input appendSampleBuffer:sampleBuffer])
+            if (!handled && ![input appendSampleBuffer:sampleBuffer])
             {
-                // Error occured
-                return NO;
+                error = YES;
             }
             CFRelease(sampleBuffer);
+
+            if (error)
+            {
+                return NO;
+            }
         }
         else
         {
@@ -261,6 +292,7 @@
     self.audioOutput = nil;
     self.writer = nil;
     self.videoInput = nil;
+    self.videoPixelBufferAdaptor = nil;
     self.audioInput = nil;
     self.inputQueue = nil;
     self.completionHandler = nil;
