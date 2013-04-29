@@ -186,6 +186,11 @@
 
 - (BOOL)encodeReadySamplesFromOutput:(AVAssetReaderOutput *)output toInput:(AVAssetWriterInput *)input
 {
+    if (self.reader.status != AVAssetReaderStatusReading || self.writer.status != AVAssetWriterStatusWriting)
+    {
+        return NO;
+    }
+
     while (input.isReadyForMoreMediaData)
     {
         CMSampleBufferRef sampleBuffer = [output copyNextSampleBuffer];
@@ -237,6 +242,11 @@
 
 - (void)finish
 {
+    if (self.reader.status == AVAssetReaderStatusCancelled || self.writer.status == AVAssetWriterStatusCancelled)
+    {
+        return;
+    }
+
     [self.writer finishWritingWithCompletionHandler:self.completionHandler];
 
     if (self.writer.status == AVAssetWriterStatusFailed)
