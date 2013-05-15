@@ -247,18 +247,31 @@
         return;
     }
 
-    [self.writer finishWritingWithCompletionHandler:self.completionHandler];
-
     if (self.writer.status == AVAssetWriterStatusFailed)
     {
-        [NSFileManager.defaultManager removeItemAtURL:self.outputURL error:nil];
-        if (self.completionHandler)
+        [self complete];
+    }
+    else
+    {
+        [self.writer finishWritingWithCompletionHandler:^
         {
-            self.completionHandler();
-        }
+            [self complete];
+        }];
+    }
+}
+
+- (void)complete
+{
+    if (self.writer.status == AVAssetWriterStatusFailed || self.writer.status == AVAssetWriterStatusCancelled)
+    {
+        [NSFileManager.defaultManager removeItemAtURL:self.outputURL error:nil];
     }
 
-    self.completionHandler = nil;
+    if (self.completionHandler)
+    {
+        self.completionHandler();
+        self.completionHandler = nil;
+    }
 }
 
 - (NSError *)error
@@ -295,11 +308,7 @@
 {
     [self.writer cancelWriting];
     [self.reader cancelReading];
-    [NSFileManager.defaultManager removeItemAtURL:self.outputURL error:nil];
-    if (self.completionHandler)
-    {
-        self.completionHandler();
-    }
+    [self complete];
     [self reset];
 }
 
