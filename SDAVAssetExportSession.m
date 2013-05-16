@@ -27,6 +27,7 @@
 {
     NSError *_error;
     NSTimeInterval duration;
+    CMTime lastSamplePresentationTime;
 }
 
 + (id)exportSessionWithAsset:(AVAsset *)asset
@@ -200,8 +201,8 @@
             BOOL error = NO;
             if (self.videoOutput == output)
             {
-                CMTime presTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-                self.progress = duration == 0 ? 1 : CMTimeGetSeconds(presTime) / duration;
+                lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+                self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
 
                 if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
                 {
@@ -209,9 +210,9 @@
                     CVPixelBufferRef renderBuffer = NULL;
                     CVPixelBufferPoolCreatePixelBuffer(NULL, self.videoPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
                     CVPixelBufferLockBaseAddress(renderBuffer, 0);
-                    [self.delegate exportSession:self renderFrame:pixelBuffer withPresentationTime:presTime toBuffer:renderBuffer];
+                    [self.delegate exportSession:self renderFrame:pixelBuffer withPresentationTime:lastSamplePresentationTime toBuffer:renderBuffer];
                     CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
-                    if (![self.videoPixelBufferAdaptor appendPixelBuffer:renderBuffer withPresentationTime:presTime])
+                    if (![self.videoPixelBufferAdaptor appendPixelBuffer:renderBuffer withPresentationTime:lastSamplePresentationTime])
                     {
                         error = YES;
                     }
@@ -253,6 +254,7 @@
     }
     else
     {
+        [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
         [self.writer finishWritingWithCompletionHandler:^
         {
             [self complete];
