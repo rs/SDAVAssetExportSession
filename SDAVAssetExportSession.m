@@ -99,7 +99,12 @@
     //
     self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:nil];
     self.videoOutput.alwaysCopiesSampleData = NO;
-    self.videoOutput.videoComposition = self.videoComposition;
+    if (self.videoComposition) {
+        self.videoOutput.videoComposition = self.videoComposition;
+    }
+    else {
+        self.videoOutput.videoComposition = [self buildDefaultVideoComposition];
+    }
     if ([self.reader canAddOutput:self.videoOutput])
     {
         [self.reader addOutput:self.videoOutput];
@@ -239,6 +244,45 @@
     }
 
     return YES;
+}
+
+- (AVMutableVideoComposition *)buildDefaultVideoComposition
+{
+    AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoComposition];
+    AVAssetTrack *videoTrack = [[_asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+    
+    // get the frame rate from _videoSettings, if not set then try to get it from the video track, 
+    // if not set (mainly when asset is AVComposition) then use the default frame rate of 30
+    float trackFrameRate = 0;
+    if (_videoSettings) {
+        NSDictionary *videoCompressionProperties = [_videoSettings objectForKey:AVVideoCompressionPropertiesKey];
+        if (videoCompressionProperties) {
+            NSNumber *maxKeyFrameInterval = [videoCompressionProperties objectForKey:AVVideoMaxKeyFrameIntervalKey];
+            if (maxKeyFrameInterval) {
+                trackFrameRate = maxKeyFrameInterval.floatValue;
+            }
+        }
+    }
+    else {
+        trackFrameRate = [videoTrack nominalFrameRate];
+    }
+    if (trackFrameRate == 0) {
+        trackFrameRate = 30;
+    }
+    
+    videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
+    videoComposition.renderSize = [videoTrack naturalSize];
+
+	// Make a "pass through video track" video composition.
+	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [_asset duration]);
+	
+	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+	
+	passThroughInstruction.layerInstructions = @[passThroughLayer];
+	videoComposition.instructions = @[passThroughInstruction];
+    
+    return videoComposition;
 }
 
 - (void)finish
