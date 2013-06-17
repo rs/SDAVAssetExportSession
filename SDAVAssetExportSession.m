@@ -194,16 +194,16 @@
 
 - (BOOL)encodeReadySamplesFromOutput:(AVAssetReaderOutput *)output toInput:(AVAssetWriterInput *)input
 {
-    if (self.reader.status != AVAssetReaderStatusReading || self.writer.status != AVAssetWriterStatusWriting)
-    {
-        return NO;
-    }
-
     while (input.isReadyForMoreMediaData)
     {
         CMSampleBufferRef sampleBuffer = [output copyNextSampleBuffer];
         if (sampleBuffer)
         {
+            if (self.reader.status != AVAssetReaderStatusReading || self.writer.status != AVAssetWriterStatusWriting)
+            {
+                return NO;
+            }
+
             BOOL handled = NO;
             BOOL error = NO;
             if (self.videoOutput == output)
