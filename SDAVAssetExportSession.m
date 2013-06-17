@@ -199,14 +199,16 @@
         CMSampleBufferRef sampleBuffer = [output copyNextSampleBuffer];
         if (sampleBuffer)
         {
-            if (self.reader.status != AVAssetReaderStatusReading || self.writer.status != AVAssetWriterStatusWriting)
-            {
-                return NO;
-            }
-
             BOOL handled = NO;
             BOOL error = NO;
-            if (self.videoOutput == output)
+
+            if (self.reader.status != AVAssetReaderStatusReading || self.writer.status != AVAssetWriterStatusWriting)
+            {
+                handled = YES;
+                error = YES;
+            }
+
+            if (!handled && self.videoOutput == output)
             {
                 lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
