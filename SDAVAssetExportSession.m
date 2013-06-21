@@ -52,6 +52,15 @@
     [self cancelExport];
     self.completionHandler = handler;
 
+    if (!self.outputURL)
+    {
+        _error = [NSError errorWithDomain:AVFoundationErrorDomain code:AVErrorExportFailed userInfo:@
+        {
+            NSLocalizedDescriptionKey: @"Output URL not set"
+        }];
+        handler();
+    }
+
     NSError *readerError;
     self.reader = [AVAssetReader.alloc initWithAsset:self.asset error:&readerError];
     if (readerError)
