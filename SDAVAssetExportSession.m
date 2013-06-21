@@ -299,26 +299,23 @@
 
 - (void)finish
 {
-    @synchronized(self)
+    // Synchronized block to ensure we never cancel the writer before calling finishWritingWithCompletionHandler
+    if (self.reader.status == AVAssetReaderStatusCancelled || self.writer.status == AVAssetWriterStatusCancelled)
     {
-        // Synchronized block to ensure we never cancel the writer before calling finishWritingWithCompletionHandler
-        if (self.reader.status == AVAssetReaderStatusCancelled || self.writer.status == AVAssetWriterStatusCancelled)
-        {
-            return;
-        }
+        return;
+    }
 
-        if (self.writer.status == AVAssetWriterStatusFailed)
+    if (self.writer.status == AVAssetWriterStatusFailed)
+    {
+        [self complete];
+    }
+    else
+    {
+        [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
+        [self.writer finishWritingWithCompletionHandler:^
         {
             [self complete];
-        }
-        else
-        {
-            [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
-            [self.writer finishWritingWithCompletionHandler:^
-            {
-                [self complete];
-            }];
-        }
+        }];
     }
 }
 
@@ -368,12 +365,15 @@
 
 - (void)cancelExport
 {
-    @synchronized(self)
+    if (self.inputQueue)
     {
-        [self.writer cancelWriting];
-        [self.reader cancelReading];
-        [self complete];
-        [self reset];
+        dispatch_async(self.inputQueue, ^
+        {
+            [self.writer cancelWriting];
+            [self.reader cancelReading];
+            [self complete];
+            [self reset];
+        });
     }
 }
 
