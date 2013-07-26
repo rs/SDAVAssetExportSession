@@ -124,7 +124,6 @@
     //
     // Video input
     //
-    // TODO: handle by preset size/bitrate etc.
     self.videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoSettings];
     self.videoInput.expectsMediaDataInRealTime = NO;
     if ([self.writer canAddInput:self.videoInput])
