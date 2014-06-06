@@ -144,12 +144,14 @@
     //Audio output
     //
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
-    self.audioOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:nil];
-    self.audioOutput.alwaysCopiesSampleData = NO;
-    self.audioOutput.audioMix = self.audioMix;
-    if ([self.reader canAddOutput:self.audioOutput])
-    {
-        [self.reader addOutput:self.audioOutput];
+    if (audioTracks.count > 0) {
+      self.audioOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:nil];
+      self.audioOutput.alwaysCopiesSampleData = NO;
+      self.audioOutput.audioMix = self.audioMix;
+      if ([self.reader canAddOutput:self.audioOutput])
+      {
+          [self.reader addOutput:self.audioOutput];
+      }
     }
 
     //
