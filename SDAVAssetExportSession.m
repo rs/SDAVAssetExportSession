@@ -152,18 +152,23 @@
       {
           [self.reader addOutput:self.audioOutput];
       }
+    } else {
+        // Just in case this gets reused
+        self.audioOutput = nil;
     }
 
     //
     // Audio input
     //
-    self.audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:self.audioSettings];
-    self.audioInput.expectsMediaDataInRealTime = NO;
-    if ([self.writer canAddInput:self.audioInput])
-    {
-        [self.writer addInput:self.audioInput];
+    if (self.audioOutput) {
+        self.audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:self.audioSettings];
+        self.audioInput.expectsMediaDataInRealTime = NO;
+        if ([self.writer canAddInput:self.audioInput])
+        {
+            [self.writer addInput:self.audioInput];
+        }
     }
-
+    
     [self.writer startWriting];
     [self.reader startReading];
     [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)videoTracks[0]).naturalTimeScale)];
@@ -186,20 +191,25 @@
             }
         }
     }];
-    [self.audioInput requestMediaDataWhenReadyOnQueue:self.inputQueue usingBlock:^
-    {
-        if (![wself encodeReadySamplesFromOutput:wself.audioOutput toInput:wself.audioInput])
-        {
-            @synchronized(wself)
-            {
-                audioCompleted = YES;
-                if (videoCompleted)
-                {
-                    [wself finish];
-                }
-            }
-        }
-    }];
+    
+    if (!self.audioOutput) {
+        audioCompleted = YES;
+    } else {
+        [self.audioInput requestMediaDataWhenReadyOnQueue:self.inputQueue usingBlock:^
+         {
+             if (![wself encodeReadySamplesFromOutput:wself.audioOutput toInput:wself.audioInput])
+             {
+                 @synchronized(wself)
+                 {
+                     audioCompleted = YES;
+                     if (videoCompleted)
+                     {
+                         [wself finish];
+                     }
+                 }
+             }
+         }];
+    }
 }
 
 - (BOOL)encodeReadySamplesFromOutput:(AVAssetReaderOutput *)output toInput:(AVAssetWriterInput *)input
