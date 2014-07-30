@@ -28,7 +28,6 @@
     NSError *_error;
     NSTimeInterval duration;
     CMTime lastSamplePresentationTime;
-    CMTime startTime;
 }
 
 + (id)exportSessionWithAsset:(AVAsset *)asset
@@ -42,7 +41,6 @@
     {
         _asset = asset;
         _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
-        startTime = kCMTimeInvalid;
     }
 
     return self;
@@ -166,6 +164,7 @@
 
     [self.writer startWriting];
     [self.reader startReading];
+    [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)videoTracks[0]).naturalTimeScale)];
 
     self.inputQueue = dispatch_queue_create("VideoEncoderInputQueue", DISPATCH_QUEUE_SERIAL);
     __block BOOL videoCompleted = NO;
@@ -216,18 +215,10 @@
                 handled = YES;
                 error = YES;
             }
-            
-            lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-            
-            // Start session at first sample presentation time (necessary when trimming from source material with non-Zero start time
-            if(CMTIME_IS_INVALID(startTime))
-            {
-                [self.writer startSessionAtSourceTime:lastSamplePresentationTime];
-                startTime = lastSamplePresentationTime;
-            }
-            
+
             if (!handled && self.videoOutput == output)
             {
+                lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
 
                 if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
