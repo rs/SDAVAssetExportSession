@@ -1,9 +1,15 @@
 //
 //  SDAVAssetExportSession.m
 //
-//  Created by Olivier Poitrey on 13/03/13.
-//  Copyright (c) 2013 Dailymotion. All rights reserved.
+// This file is part of the SDAVAssetExportSession package.
 //
+// Created by Olivier Poitrey <rs@dailymotion.com> on 13/03/13.
+// Copyright 2013 Olivier Poitrey. All rights servered.
+//
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
+//
+
 
 #import "SDAVAssetExportSession.h"
 
