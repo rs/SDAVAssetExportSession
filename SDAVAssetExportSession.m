@@ -371,7 +371,7 @@
     }
 }
 
-- (AVAssetWriterStatus)status
+- (AVAssetExportSessionStatus)status
 {
     switch (self.writer.status)
     {
