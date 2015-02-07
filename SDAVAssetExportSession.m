@@ -108,7 +108,6 @@
     {
         duration = CMTimeGetSeconds(self.asset.duration);
     }
-
     //
     // Video output
     //
@@ -306,8 +305,33 @@
         trackFrameRate = 30;
     }
 
-    videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
-    videoComposition.renderSize = [videoTrack naturalSize];
+	videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
+	CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
+	CGSize naturalSize = [videoTrack naturalSize];
+	CGAffineTransform transform = videoTrack.preferredTransform;
+	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
+	if (videoAngleInDegree == 90 || videoAngleInDegree == 270) {
+		CGFloat width = naturalSize.width;
+		naturalSize.width = naturalSize.height;
+		naturalSize.height = width;
+	}
+	videoComposition.renderSize = naturalSize;
+	// center inside
+	{
+		float ratio;
+		float xratio = targetSize.width / naturalSize.width;
+		float yratio = targetSize.height / naturalSize.height;
+		ratio = MIN(xratio, yratio);
+
+		float postWidth = naturalSize.width * ratio;
+		float postHeight = naturalSize.height * ratio;
+		float transx = (targetSize.width - postWidth) / 2;
+		float transy = (targetSize.height - postHeight) / 2;
+
+		CGAffineTransform matrix = CGAffineTransformMakeTranslation(transx / xratio, transy / yratio);
+		matrix = CGAffineTransformScale(matrix, ratio / xratio, ratio / yratio);
+		transform = CGAffineTransformConcat(transform, matrix);
+	}
 
 	// Make a "pass through video track" video composition.
 	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
@@ -315,7 +339,7 @@
 
 	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
 
-    [passThroughLayer setTransform:videoTrack.preferredTransform atTime:kCMTimeZero];
+    [passThroughLayer setTransform:transform atTime:kCMTimeZero];
 
 	passThroughInstruction.layerInstructions = @[passThroughLayer];
 	videoComposition.instructions = @[passThroughInstruction];
