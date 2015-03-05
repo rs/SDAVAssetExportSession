@@ -65,6 +65,7 @@
             NSLocalizedDescriptionKey: @"Output URL not set"
         }];
         handler();
+        return;
     }
 
     NSError *readerError;
