@@ -75,7 +75,7 @@
  * The settings used for encoding the video track.
  *
  * A value of nil specifies that appended output should not be re-encoded.
- * The dictionary’s keys are from <CoreVideo/CVPixelBuffer.h>.
+ * The dictionary’s keys are from <AVFoundation/AVVideoSettings.h>.
  */
 @property (nonatomic, copy) NSDictionary *videoSettings;
 

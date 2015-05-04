@@ -34,17 +34,17 @@ encoder.audioSettings = @
 
 [encoder exportAsynchronouslyWithCompletionHandler:^
 {
-    if (status == AVAssetExportSessionStatusCompleted)
+    if (encoder.status == AVAssetExportSessionStatusCompleted)
     {
         NSLog(@"Video export succeeded");
     }
-    else if (status == AVAssetExportSessionStatusCancelled)
+    else if (encoder.status == AVAssetExportSessionStatusCancelled)
     {
         NSLog(@"Video export cancelled");
     }
     else
     {
-        NSLog(@"Video export failed with error: %@ (%d)", error.localizedDescription, error.code);
+        NSLog(@"Video export failed with error: %@ (%d)", encoder.error.localizedDescription, encoder.error.code);
     }
 }];
 
