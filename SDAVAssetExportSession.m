@@ -244,13 +244,12 @@
                 error = YES;
             }
             
-            if (!handled) {
-                lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-                self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
-            }
-
             if (!handled && self.videoOutput == output)
             {
+                // update the video progress
+                lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+                self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
+
                 if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
                 {
                     CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
