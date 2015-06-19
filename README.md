@@ -1,7 +1,7 @@
 SDAVAssetExportSession
 ======================
 
-`AVAssetExportSession` drop-in remplacement with customizable audio&amp;video settings.
+`AVAssetExportSession` drop-in replacement with customizable audio&amp;video settings.
 
 You want the ease of use of `AVAssetExportSession` but default provided presets doesn't fit your needs? You then began to read documentation for `AVAssetWriter`, `AVAssetWriterInput`, `AVAssetReader`, `AVAssetReaderVideoCompositionOutput`, `AVAssetReaderAudioMixOutput`… and you went out of aspirin? `SDAVAssetExportSession` is a rewrite of `AVAssetExportSession` on top of `AVAssetReader*` and `AVAssetWriter*`. Unlike `AVAssetExportSession`, you are not limited to a set of presets – you have full access over audio and video settings.
 
@@ -34,17 +34,17 @@ encoder.audioSettings = @
 
 [encoder exportAsynchronouslyWithCompletionHandler:^
 {
-    if (status == AVAssetExportSessionStatusCompleted)
+    if (encoder.status == AVAssetExportSessionStatusCompleted)
     {
         NSLog(@"Video export succeeded");
     }
-    else if (status == AVAssetExportSessionStatusCancelled)
+    else if (encoder.status == AVAssetExportSessionStatusCancelled)
     {
         NSLog(@"Video export cancelled");
     }
     else
     {
-        NSLog(@"Video export failed with error: %@ (%d)", error.localizedDescription, error.code);
+        NSLog(@"Video export failed with error: %@ (%d)", encoder.error.localizedDescription, encoder.error.code);
     }
 }];
 

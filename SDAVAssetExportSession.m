@@ -65,6 +65,7 @@
             NSLocalizedDescriptionKey: @"Output URL not set"
         }];
         handler();
+        return;
     }
 
     NSError *readerError;
@@ -108,43 +109,44 @@
     {
         duration = CMTimeGetSeconds(self.asset.duration);
     }
-
     //
     // Video output
     //
-    self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:nil];
-    self.videoOutput.alwaysCopiesSampleData = NO;
-    if (self.videoComposition)
-    {
-        self.videoOutput.videoComposition = self.videoComposition;
-    }
-    else
-    {
-        self.videoOutput.videoComposition = [self buildDefaultVideoComposition];
-    }
-    if ([self.reader canAddOutput:self.videoOutput])
-    {
-        [self.reader addOutput:self.videoOutput];
-    }
+    if (videoTracks.count > 0) {
+        self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:nil];
+        self.videoOutput.alwaysCopiesSampleData = NO;
+        if (self.videoComposition)
+        {
+            self.videoOutput.videoComposition = self.videoComposition;
+        }
+        else
+        {
+            self.videoOutput.videoComposition = [self buildDefaultVideoComposition];
+        }
+        if ([self.reader canAddOutput:self.videoOutput])
+        {
+            [self.reader addOutput:self.videoOutput];
+        }
 
-    //
-    // Video input
-    //
-    self.videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoSettings];
-    self.videoInput.expectsMediaDataInRealTime = NO;
-    if ([self.writer canAddInput:self.videoInput])
-    {
-        [self.writer addInput:self.videoInput];
+        //
+        // Video input
+        //
+        self.videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoSettings];
+        self.videoInput.expectsMediaDataInRealTime = NO;
+        if ([self.writer canAddInput:self.videoInput])
+        {
+            [self.writer addInput:self.videoInput];
+        }
+        NSDictionary *pixelBufferAttributes = @
+        {
+            (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
+            (id)kCVPixelBufferWidthKey: @(renderSize.width),
+            (id)kCVPixelBufferHeightKey: @(renderSize.height),
+            @"IOSurfaceOpenGLESTextureCompatibility": @YES,
+            @"IOSurfaceOpenGLESFBOCompatibility": @YES,
+        };
+        self.videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
     }
-    NSDictionary *pixelBufferAttributes = @
-    {
-        (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-        (id)kCVPixelBufferWidthKey: @(renderSize.width),
-        (id)kCVPixelBufferHeightKey: @(renderSize.height),
-        @"IOSurfaceOpenGLESTextureCompatibility": @YES,
-        @"IOSurfaceOpenGLESFBOCompatibility": @YES,
-    };
-    self.videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
 
     //
     //Audio output
@@ -177,26 +179,34 @@
     
     [self.writer startWriting];
     [self.reader startReading];
-    [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)videoTracks[0]).naturalTimeScale)];
+    if (videoTracks.count > 0)
+        [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)videoTracks[0]).naturalTimeScale)];
+    else
+        [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)audioTracks[0]).naturalTimeScale)];        
 
-    self.inputQueue = dispatch_queue_create("VideoEncoderInputQueue", DISPATCH_QUEUE_SERIAL);
     __block BOOL videoCompleted = NO;
     __block BOOL audioCompleted = NO;
     __weak typeof(self) wself = self;
-    [self.videoInput requestMediaDataWhenReadyOnQueue:self.inputQueue usingBlock:^
-    {
-        if (![wself encodeReadySamplesFromOutput:wself.videoOutput toInput:wself.videoInput])
+    self.inputQueue = dispatch_queue_create("VideoEncoderInputQueue", DISPATCH_QUEUE_SERIAL);
+    if (videoTracks.count > 0) {
+        [self.videoInput requestMediaDataWhenReadyOnQueue:self.inputQueue usingBlock:^
         {
-            @synchronized(wself)
+            if (![wself encodeReadySamplesFromOutput:wself.videoOutput toInput:wself.videoInput])
             {
-                videoCompleted = YES;
-                if (audioCompleted)
+                @synchronized(wself)
                 {
-                    [wself finish];
+                    videoCompleted = YES;
+                    if (audioCompleted)
+                    {
+                        [wself finish];
+                    }
                 }
             }
-        }
-    }];
+        }];
+    }
+    else {
+        videoCompleted = YES;
+    }
     
     if (!self.audioOutput) {
         audioCompleted = YES;
@@ -233,9 +243,10 @@
                 handled = YES;
                 error = YES;
             }
-
+            
             if (!handled && self.videoOutput == output)
             {
+                // update the video progress
                 lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
 
@@ -306,8 +317,33 @@
         trackFrameRate = 30;
     }
 
-    videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
-    videoComposition.renderSize = [videoTrack naturalSize];
+	videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
+	CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
+	CGSize naturalSize = [videoTrack naturalSize];
+	CGAffineTransform transform = videoTrack.preferredTransform;
+	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
+	if (videoAngleInDegree == 90 || videoAngleInDegree == 270) {
+		CGFloat width = naturalSize.width;
+		naturalSize.width = naturalSize.height;
+		naturalSize.height = width;
+	}
+	videoComposition.renderSize = naturalSize;
+	// center inside
+	{
+		float ratio;
+		float xratio = targetSize.width / naturalSize.width;
+		float yratio = targetSize.height / naturalSize.height;
+		ratio = MIN(xratio, yratio);
+
+		float postWidth = naturalSize.width * ratio;
+		float postHeight = naturalSize.height * ratio;
+		float transx = (targetSize.width - postWidth) / 2;
+		float transy = (targetSize.height - postHeight) / 2;
+
+		CGAffineTransform matrix = CGAffineTransformMakeTranslation(transx / xratio, transy / yratio);
+		matrix = CGAffineTransformScale(matrix, ratio / xratio, ratio / yratio);
+		transform = CGAffineTransformConcat(transform, matrix);
+	}
 
 	// Make a "pass through video track" video composition.
 	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
@@ -315,7 +351,7 @@
 
 	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
 
-    [passThroughLayer setTransform:videoTrack.preferredTransform atTime:kCMTimeZero];
+    [passThroughLayer setTransform:transform atTime:kCMTimeZero];
 
 	passThroughInstruction.layerInstructions = @[passThroughLayer];
 	videoComposition.instructions = @[passThroughInstruction];
