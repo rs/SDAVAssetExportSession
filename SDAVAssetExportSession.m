@@ -113,7 +113,7 @@
     // Video output
     //
     if (videoTracks.count > 0) {
-        self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:nil];
+        self.videoOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:self.videoInputSettings];
         self.videoOutput.alwaysCopiesSampleData = NO;
         if (self.videoComposition)
         {
