@@ -255,9 +255,7 @@
                     CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
                     CVPixelBufferRef renderBuffer = NULL;
                     CVPixelBufferPoolCreatePixelBuffer(NULL, self.videoPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
-                    CVPixelBufferLockBaseAddress(renderBuffer, 0);
                     [self.delegate exportSession:self renderFrame:pixelBuffer withPresentationTime:lastSamplePresentationTime toBuffer:renderBuffer];
-                    CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
                     if (![self.videoPixelBufferAdaptor appendPixelBuffer:renderBuffer withPresentationTime:lastSamplePresentationTime])
                     {
                         error = YES;
