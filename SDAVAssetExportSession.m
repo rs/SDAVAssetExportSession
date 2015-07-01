@@ -320,7 +320,7 @@
 	CGSize naturalSize = [videoTrack naturalSize];
 	CGAffineTransform transform = videoTrack.preferredTransform;
 	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
-	if (videoAngleInDegree == 90 || videoAngleInDegree == 270) {
+	if (videoAngleInDegree == 90 || videoAngleInDegree == -90) {
 		CGFloat width = naturalSize.width;
 		naturalSize.width = naturalSize.height;
 		naturalSize.height = width;
