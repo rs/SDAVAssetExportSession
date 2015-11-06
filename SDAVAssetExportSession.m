@@ -371,10 +371,11 @@
     }
     else
     {
+        __weak typeof(self) wself = self;
         [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
         [self.writer finishWritingWithCompletionHandler:^
         {
-            [self complete];
+            [wself complete];
         }];
     }
 }
