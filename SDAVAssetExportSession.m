@@ -33,7 +33,6 @@
 {
     NSError *_error;
     NSTimeInterval duration;
-    CMTime lastSamplePresentationTime;
 }
 
 + (id)exportSessionWithAsset:(AVAsset *)asset
@@ -236,8 +235,9 @@
             if (!handled && self.videoOutput == output)
             {
                 // update the video progress
-                lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+                CMTime lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
                 lastSamplePresentationTime = CMTimeSubtract(lastSamplePresentationTime, self.timeRange.start);
+                
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
 
                 if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
@@ -361,10 +361,21 @@
     }
     else
     {
-        [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
+        __weak typeof(self) wself = self;
+        
+        if (CMTIME_IS_VALID(self.timeRange.duration) && !CMTIME_IS_POSITIVE_INFINITY(self.timeRange.duration))
+        {
+            [self.writer endSessionAtSourceTime:self.timeRange.duration];
+        }
+        else if (CMTIME_IS_VALID(self.asset.duration) && !
+                 CMTIME_IS_POSITIVE_INFINITY(self.asset.duration))
+        {
+            [self.writer endSessionAtSourceTime:self.asset.duration];
+        }
+        
         [self.writer finishWritingWithCompletionHandler:^
         {
-            [self complete];
+            [wself complete];
         }];
     }
 }
