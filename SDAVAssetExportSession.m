@@ -90,15 +90,7 @@
     self.writer.metadata = self.metadata;
 
     NSArray *videoTracks = [self.asset tracksWithMediaType:AVMediaTypeVideo];
-    CGSize renderSize;
-    if (self.videoComposition)
-    {
-        renderSize = self.videoComposition.renderSize;
-    }
-    else if (videoTracks.count)
-    {
-        renderSize = ((AVAssetTrack *)videoTracks[0]).naturalSize;
-    }
+
 
     if (CMTIME_IS_VALID(self.timeRange.duration) && !CMTIME_IS_POSITIVE_INFINITY(self.timeRange.duration))
     {
@@ -139,8 +131,8 @@
         NSDictionary *pixelBufferAttributes = @
         {
             (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-            (id)kCVPixelBufferWidthKey: @(renderSize.width),
-            (id)kCVPixelBufferHeightKey: @(renderSize.height),
+            (id)kCVPixelBufferWidthKey: @(self.videoOutput.videoComposition.renderSize.width),
+            (id)kCVPixelBufferHeightKey: @(self.videoOutput.videoComposition.renderSize.height),
             @"IOSurfaceOpenGLESTextureCompatibility": @YES,
             @"IOSurfaceOpenGLESFBOCompatibility": @YES,
         };
@@ -178,10 +170,7 @@
     
     [self.writer startWriting];
     [self.reader startReading];
-    if (videoTracks.count > 0)
-        [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)videoTracks[0]).naturalTimeScale)];
-    else
-        [self.writer startSessionAtSourceTime:CMTimeMake(0, ((AVAssetTrack *)audioTracks[0]).naturalTimeScale)];        
+    [self.writer startSessionAtSourceTime:self.timeRange.start];
 
     __block BOOL videoCompleted = NO;
     __block BOOL audioCompleted = NO;
@@ -247,6 +236,8 @@
             {
                 // update the video progress
                 CMTime lastSamplePresentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+                lastSamplePresentationTime = CMTimeSubtract(lastSamplePresentationTime, self.timeRange.start);
+                
                 self.progress = duration == 0 ? 1 : CMTimeGetSeconds(lastSamplePresentationTime) / duration;
 
                 if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
