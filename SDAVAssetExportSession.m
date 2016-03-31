@@ -359,9 +359,12 @@
     {
         [self complete];
     }
+    else if (self.reader.status == AVAssetReaderStatusFailed) {
+        [self.writer cancelWriting];
+        [self complete];
+    }
     else
     {
-        [self.writer endSessionAtSourceTime:lastSamplePresentationTime];
         [self.writer finishWritingWithCompletionHandler:^
         {
             [self complete];
