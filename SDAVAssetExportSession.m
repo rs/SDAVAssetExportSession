@@ -109,6 +109,15 @@
         self.videoOutput.alwaysCopiesSampleData = NO;
         if (self.videoComposition)
         {
+            AVMutableVideoComposition *defaultComposition = [self buildDefaultVideoComposition];
+            if (defaultComposition.renderSize.width <= 0 || defaultComposition.renderSize.height <= 0) {
+                _error = [NSError errorWithDomain:AVFoundationErrorDomain code:AVErrorExportFailed userInfo:@
+                          {
+                          NSLocalizedDescriptionKey: @"Non-positive render size"
+                          }];
+                handler();
+                return;
+            }
             self.videoOutput.videoComposition = self.videoComposition;
         }
         else
