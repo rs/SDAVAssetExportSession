@@ -129,15 +129,26 @@
         {
             [self.writer addInput:self.videoInput];
         }
-        NSDictionary *pixelBufferAttributes = @
+        if ([self.delegate respondsToSelector:@selector(exportSession:renderFrame:withPresentationTime:toBuffer:)])
         {
-            (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-            (id)kCVPixelBufferWidthKey: @(self.videoOutput.videoComposition.renderSize.width),
-            (id)kCVPixelBufferHeightKey: @(self.videoOutput.videoComposition.renderSize.height),
-            @"IOSurfaceOpenGLESTextureCompatibility": @YES,
-            @"IOSurfaceOpenGLESFBOCompatibility": @YES,
-        };
-        self.videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+            // If a pixel format was specified in videoInputSettings, use the same pixel format for the render buffers
+            // In practice, kCVPixelFormatType_32BGRA always seems to be the fastest (even when transcoding between YpCbCr formats, such as H.264)
+            // This is despite the fact that the YpCbCr pixel buffers are less than half the size (12 bits/pixel vs. 32 bits/pixel)
+            id pixelFormat = self.videoInputSettings[(id)kCVPixelBufferPixelFormatTypeKey];
+            if (!pixelFormat)
+            {
+                pixelFormat = @(kCVPixelFormatType_32BGRA);
+            }
+            NSDictionary *pixelBufferAttributes = @
+            {
+                (id)kCVPixelBufferPixelFormatTypeKey: pixelFormat,
+                (id)kCVPixelBufferWidthKey: @(self.videoOutput.videoComposition.renderSize.width),
+                (id)kCVPixelBufferHeightKey: @(self.videoOutput.videoComposition.renderSize.height),
+                @"IOSurfaceOpenGLESTextureCompatibility": @YES,
+                @"IOSurfaceOpenGLESFBOCompatibility": @YES,
+            };
+            self.videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+        }
     }
 
     //
