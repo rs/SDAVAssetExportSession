@@ -428,13 +428,18 @@
 {
     if (self.inputQueue)
     {
-        dispatch_async(self.inputQueue, ^
-        {
+        void (^cancelBlock)() = ^void() {
             [self.writer cancelWriting];
             [self.reader cancelReading];
             [self complete];
             [self reset];
-        });
+        };
+        
+        if (dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == dispatch_queue_get_label(self.inputQueue)) {
+            cancelBlock();
+        } else {
+            dispatch_sync(self.inputQueue, cancelBlock);
+        }
     }
 }
 
