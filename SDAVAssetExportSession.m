@@ -288,10 +288,10 @@
         NSDictionary *videoCompressionProperties = [self.videoSettings objectForKey:AVVideoCompressionPropertiesKey];
         if (videoCompressionProperties)
         {
-            NSNumber *maxKeyFrameInterval = [videoCompressionProperties objectForKey:AVVideoMaxKeyFrameIntervalKey];
-            if (maxKeyFrameInterval)
+            NSNumber *frameRate = [videoCompressionProperties objectForKey:AVVideoAverageNonDroppableFrameRateKey];
+            if (frameRate)
             {
-                trackFrameRate = maxKeyFrameInterval.floatValue;
+                trackFrameRate = frameRate.floatValue;
             }
         }
     }
