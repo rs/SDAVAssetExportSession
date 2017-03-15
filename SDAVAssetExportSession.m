@@ -445,4 +445,9 @@
     self.completionHandler = nil;
 }
 
++ (NSSet *)keyPathsForValuesAffectingStatus
+{
+    return [NSSet setWithObject:@"writer.status"];
+}
+
 @end
