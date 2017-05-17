@@ -309,6 +309,7 @@
 	CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
 	CGSize naturalSize = [videoTrack naturalSize];
 	CGAffineTransform transform = videoTrack.preferredTransform;
+    transform.ty = 0;
 	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
 	if (videoAngleInDegree == 90 || videoAngleInDegree == -90) {
 		CGFloat width = naturalSize.width;
