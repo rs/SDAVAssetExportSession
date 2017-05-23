@@ -339,11 +339,39 @@
 	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, self.asset.duration);
 
 	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+    
+    //fix Orientation - 1
+    UIImageOrientation videoAssetOrientation = UIImageOrientationUp;
+    BOOL isVideoAssetPortrait = NO;
+    CGAffineTransform videoTransform = videoTrack.preferredTransform;
+    if (videoTransform.a == 0 && videoTransform.b == 1.0 && videoTransform.c == -1.0 && videoTransform.d == 0) {
+        videoAssetOrientation = UIImageOrientationRight;
+        isVideoAssetPortrait = YES;
+    }
+    if (videoTransform.a == 0 && videoTransform.b == -1.0 && videoTransform.c == 1.0 && videoTransform.d == 0) {
+        videoAssetOrientation =  UIImageOrientationLeft;
+        isVideoAssetPortrait = YES;
+    }
+    if (videoTransform.a == 1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == 1.0) {
+        videoAssetOrientation =  UIImageOrientationUp;
+    }
+    if (videoTransform.a == -1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == -1.0) {
+        videoAssetOrientation = UIImageOrientationDown;
+    }
+    [passThroughLayer setTransform:videoTrack.preferredTransform atTime:kCMTimeZero];
 
     [passThroughLayer setTransform:transform atTime:kCMTimeZero];
 
 	passThroughInstruction.layerInstructions = @[passThroughLayer];
 	videoComposition.instructions = @[passThroughInstruction];
+    
+    //fix Orientation - 2
+    CGSize naturalSize;
+    if(isVideoAssetPortrait){
+        naturalSize = CGSizeMake(videoTrack.naturalSize.height, videoTrack.naturalSize.width);
+    } else {
+        naturalSize = videoTrack.naturalSize;
+    }
 
     return videoComposition;
 }
