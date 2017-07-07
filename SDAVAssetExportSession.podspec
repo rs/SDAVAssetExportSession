@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "SDAVAssetExportSession"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "AVAssetExportSession drop-in replacement with customizable audio&video settings"
   s.description  = <<-DESC
                    AVAssetExportSession drop-in remplacement with customizable audio&video settings.
