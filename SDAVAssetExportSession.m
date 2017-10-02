@@ -25,7 +25,7 @@
 @property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor *videoPixelBufferAdaptor;
 @property (nonatomic, strong) AVAssetWriterInput *audioInput;
 @property (nonatomic, strong) dispatch_queue_t inputQueue;
-@property (nonatomic, strong) void (^completionHandler)();
+@property (nonatomic, strong) void (^completionHandler)(void);
 
 @end
 
@@ -52,7 +52,7 @@
     return self;
 }
 
-- (void)exportAsynchronouslyWithCompletionHandler:(void (^)())handler
+- (void)exportAsynchronouslyWithCompletionHandler:(void (^)(void))handler
 {
     NSParameterAssert(handler != nil);
     [self cancelExport];
@@ -309,10 +309,7 @@
 	CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
 	CGSize naturalSize = [videoTrack naturalSize];
 	CGAffineTransform transform = videoTrack.preferredTransform;
-	// Workaround radar 31928389, see https://github.com/rs/SDAVAssetExportSession/pull/70 for more info
-	if (transform.ty == -560) {
-		transform.ty = 0;
-	}
+    	transform.ty = 0;
 	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
 	if (videoAngleInDegree == 90 || videoAngleInDegree == -90) {
 		CGFloat width = naturalSize.width;
