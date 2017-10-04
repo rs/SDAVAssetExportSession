@@ -313,6 +313,11 @@
 	if (transform.ty == -560) {
 		transform.ty = 0;
 	}
+
+	if (transform.tx == -560) {
+		transform.tx = 0;
+	}
+
 	CGFloat videoAngleInDegree  = atan2(transform.b, transform.a) * 180 / M_PI;
 	if (videoAngleInDegree == 90 || videoAngleInDegree == -90) {
 		CGFloat width = naturalSize.width;
