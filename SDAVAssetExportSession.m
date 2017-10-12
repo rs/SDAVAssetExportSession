@@ -289,7 +289,7 @@
         if (videoCompressionProperties)
         {
             NSNumber *frameRate = [videoCompressionProperties objectForKey:AVVideoAverageNonDroppableFrameRateKey];
-            if (frameRate)
+            if ([frameRate boolValue])
             {
                 trackFrameRate = frameRate.floatValue;
             }
