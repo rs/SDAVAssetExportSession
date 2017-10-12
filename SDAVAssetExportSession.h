@@ -140,7 +140,7 @@
  *
  * For possible values, see “AVAssetExportSessionStatus.”
  *
- * You can observe this property using key-value observing. (TODO)
+ * You can observe this property using key-value observing.
  */
 @property (nonatomic, assign, readonly) AVAssetExportSessionStatus status;
 
