@@ -123,7 +123,7 @@
  *
  * If there is no error to report, the value of this property is nil.
  */
-@property (nonatomic, strong, readonly) NSError *error;
+@property (nonatomic, strong) NSError *error;
 
 /**
  * The progress of the export on a scale from 0 to 1.
