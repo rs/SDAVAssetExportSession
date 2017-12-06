@@ -39,6 +39,8 @@
 
 @property (nonatomic, strong) AVAssetReader *reader;
 @property (nonatomic, strong) AVAssetWriter *writer;
+@property (nonatomic, strong) dispatch_queue_t inputQueue;
+
 /**
  * The asset with which the export session was initialized.
  */

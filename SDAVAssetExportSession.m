@@ -16,15 +16,11 @@
 @interface SDAVAssetExportSession ()
 
 @property (nonatomic, assign, readwrite) float progress;
-
-@property (nonatomic, strong) AVAssetReader *reader;
 @property (nonatomic, strong) AVAssetReaderVideoCompositionOutput *videoOutput;
 @property (nonatomic, strong) AVAssetReaderAudioMixOutput *audioOutput;
-@property (nonatomic, strong) AVAssetWriter *writer;
 @property (nonatomic, strong) AVAssetWriterInput *videoInput;
 @property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor *videoPixelBufferAdaptor;
 @property (nonatomic, strong) AVAssetWriterInput *audioInput;
-@property (nonatomic, strong) dispatch_queue_t inputQueue;
 @property (nonatomic, strong) void (^completionHandler)(void);
 
 @end
