@@ -37,6 +37,8 @@
 
 @property (nonatomic, weak) id<SDAVAssetExportSessionDelegate> delegate;
 
+@property (nonatomic, strong) AVAssetReader *reader;
+@property (nonatomic, strong) AVAssetWriter *writer;
 /**
  * The asset with which the export session was initialized.
  */
