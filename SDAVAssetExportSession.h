@@ -37,14 +37,15 @@
 
 @property (nonatomic, weak) id<SDAVAssetExportSessionDelegate> delegate;
 
-@property (nonatomic, strong) AVAssetReader *reader;
-@property (nonatomic, strong) AVAssetWriter *writer;
-@property (nonatomic, strong) dispatch_queue_t inputQueue;
+@property (nonatomic, strong, readonly) AVAssetReader *reader;
+@property (nonatomic, strong, readonly) AVAssetWriter *writer;
+@property (nonatomic, strong, readonly) dispatch_queue_t inputQueue;
 
 /**
  * The asset with which the export session was initialized.
  */
-@property (nonatomic, strong, readonly) AVAsset *asset;
+@property (nonatomic, strong) AVAsset *asset;
+@property (nonatomic, copy) AVAudioTimePitchAlgorithm audioTimePitchAlgorithm NS_AVAILABLE(10_9, 7_0);
 
 /**
  * Indicates whether video composition is enabled for export, and supplies the instructions for video composition.
