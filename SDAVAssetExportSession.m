@@ -145,7 +145,9 @@
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
     if (audioTracks.count > 0) {
         self.audioOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:nil];
-        self.audioOutput.audioTimePitchAlgorithm = self.audioTimePitchAlgorithm;
+        if (self.audioTimePitchAlgorithm) {
+            self.audioOutput.audioTimePitchAlgorithm = self.audioTimePitchAlgorithm;
+        }
         self.audioOutput.alwaysCopiesSampleData = NO;
         self.audioOutput.audioMix = self.audioMix;
         if ([self.reader canAddOutput:self.audioOutput])
