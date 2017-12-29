@@ -16,14 +16,13 @@
 @interface SDAVAssetExportSession ()
 
 @property (nonatomic, assign, readwrite) float progress;
-
-@property (nonatomic, strong) AVAssetReader *reader;
 @property (nonatomic, strong) AVAssetReaderVideoCompositionOutput *videoOutput;
 @property (nonatomic, strong) AVAssetReaderAudioMixOutput *audioOutput;
-@property (nonatomic, strong) AVAssetWriter *writer;
 @property (nonatomic, strong) AVAssetWriterInput *videoInput;
 @property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor *videoPixelBufferAdaptor;
 @property (nonatomic, strong) AVAssetWriterInput *audioInput;
+@property (nonatomic, strong) AVAssetReader *reader;
+@property (nonatomic, strong) AVAssetWriter *writer;
 @property (nonatomic, strong) dispatch_queue_t inputQueue;
 @property (nonatomic, strong) void (^completionHandler)(void);
 
@@ -145,13 +144,16 @@
     //
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
     if (audioTracks.count > 0) {
-      self.audioOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:nil];
-      self.audioOutput.alwaysCopiesSampleData = NO;
-      self.audioOutput.audioMix = self.audioMix;
-      if ([self.reader canAddOutput:self.audioOutput])
-      {
-          [self.reader addOutput:self.audioOutput];
-      }
+        self.audioOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:nil];
+        if (self.audioTimePitchAlgorithm) {
+            self.audioOutput.audioTimePitchAlgorithm = self.audioTimePitchAlgorithm;
+        }
+        self.audioOutput.alwaysCopiesSampleData = NO;
+        self.audioOutput.audioMix = self.audioMix;
+        if ([self.reader canAddOutput:self.audioOutput])
+        {
+            [self.reader addOutput:self.audioOutput];
+        }
     } else {
         // Just in case this gets reused
         self.audioOutput = nil;
