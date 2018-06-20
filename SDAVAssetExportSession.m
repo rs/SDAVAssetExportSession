@@ -305,10 +305,10 @@
         trackFrameRate = 30;
     }
 
-	videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
-	CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
-	CGSize naturalSize = [videoTrack naturalSize];
-	CGAffineTransform transform = videoTrack.preferredTransform;
+    videoComposition.frameDuration = CMTimeMake(1, trackFrameRate);
+    CGSize targetSize = CGSizeMake([self.videoSettings[AVVideoWidthKey] floatValue], [self.videoSettings[AVVideoHeightKey] floatValue]);
+    CGSize naturalSize = [videoTrack naturalSize];
+    CGAffineTransform transform = videoTrack.preferredTransform;
 	
     // Fix for mp4 video black screen with audio, see https://github.com/rs/SDAVAssetExportSession/issues/79 for more info
     CGRect rect = {{0, 0}, naturalSize};
