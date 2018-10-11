@@ -337,7 +337,7 @@
 		float transx = (targetSize.width - postWidth) / 2;
 		float transy = (targetSize.height - postHeight) / 2;
 
-		CGAffineTransform matrix = CGAffineTransformMakeTranslation(transx / xratio, transy / yratio);
+		CGAffineTransform matrix = CGAffineTransformMakeTranslation(transx / xratio, transy / yratio - transform.ty);
 		matrix = CGAffineTransformScale(matrix, ratio / xratio, ratio / yratio);
 		transform = CGAffineTransformConcat(transform, matrix);
 	}
