@@ -324,6 +324,16 @@
 		naturalSize.width = naturalSize.height;
 		naturalSize.height = width;
 	}
+  
+  //Fix issues related to https://github.com/rs/SDAVAssetExportSession/issues/91
+  if (videoAngleInDegree == 90 && transform.tx == 0) {
+      transform.tx = naturalSize.width;
+  }
+  
+  if (videoAngleInDegree == -90 && transform.ty == 0) {
+      transform.ty = naturalSize.height;
+  }
+  
 	videoComposition.renderSize = naturalSize;
 	// center inside
 	{
