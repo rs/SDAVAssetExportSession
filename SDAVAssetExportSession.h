@@ -15,6 +15,7 @@
 
 @protocol SDAVAssetExportSessionDelegate;
 
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * An `SDAVAssetExportSession` object transcodes the contents of an AVAsset source object to create an output
@@ -23,7 +24,7 @@
  * limited set of Apple provided presets.
  *
  * After you have initialized an export session with the asset that contains the source media, video and audio
- * settings, and the output file type (outputFileType), you can start the export running by invoking 
+ * settings, and the output file type (outputFileType), you can start the export running by invoking
  * `exportAsynchronouslyWithCompletionHandler:`. Because the export is performed asynchronously, this method
  * returns immediately — you can observe progress to check on the progress.
  *
@@ -47,12 +48,12 @@
  *
  * You can observe this property using key-value observing.
  */
-@property (nonatomic, copy) AVVideoComposition *videoComposition;
+@property (nonatomic, copy, nullable) AVVideoComposition *videoComposition;
 
 /**
  * Indicates whether non-default audio mixing is enabled for export, and supplies the parameters for audio mixing.
  */
-@property (nonatomic, copy) AVAudioMix *audioMix;
+@property (nonatomic, copy, nullable) AVAudioMix *audioMix;
 
 /**
  * The type of file to be written by the session.
@@ -62,21 +63,21 @@
  *
  * You can observe this property using key-value observing.
  */
-@property (nonatomic, copy) NSString *outputFileType;
+@property (nonatomic, copy, nullable) AVFileType outputFileType;
 
 /**
  * The URL of the export session’s output.
  *
  * You can observe this property using key-value observing.
  */
-@property (nonatomic, copy) NSURL *outputURL;
+@property (nonatomic, copy, nullable) NSURL *outputURL;
 
 /**
  * The settings used for input video track.
  *
  * The dictionary’s keys are from <CoreVideo/CVPixelBuffer.h>.
  */
-@property (nonatomic, copy) NSDictionary *videoInputSettings;
+@property (nonatomic, copy, nullable) NSDictionary *videoInputSettings;
 
 /**
  * The settings used for encoding the video track.
@@ -84,7 +85,7 @@
  * A value of nil specifies that appended output should not be re-encoded.
  * The dictionary’s keys are from <AVFoundation/AVVideoSettings.h>.
  */
-@property (nonatomic, copy) NSDictionary *videoSettings;
+@property (nonatomic, copy, nullable) NSDictionary *videoSettings;
 
 /**
  * The settings used for encoding the audio track.
@@ -92,7 +93,7 @@
  * A value of nil specifies that appended output should not be re-encoded.
  * The dictionary’s keys are from <CoreVideo/CVPixelBuffer.h>.
  */
-@property (nonatomic, copy) NSDictionary *audioSettings;
+@property (nonatomic, copy, nullable) NSDictionary *audioSettings;
 
 /**
  * The time range to be exported from the source.
@@ -115,7 +116,7 @@
 /**
  * The metadata to be written to the output file by the export session.
  */
-@property (nonatomic, copy) NSArray *metadata;
+@property (nonatomic, copy, nullable) NSArray *metadata;
 
 /**
  * Describes the error that occurred if the export status is `AVAssetExportSessionStatusFailed`
@@ -123,7 +124,7 @@
  *
  * If there is no error to report, the value of this property is nil.
  */
-@property (nonatomic, strong, readonly) NSError *error;
+@property (nonatomic, strong, readonly, nullable) NSError *error;
 
 /**
  * The progress of the export on a scale from 0 to 1.
@@ -148,17 +149,17 @@
  * Returns an asset export session configured with a specified asset.
  *
  * @param asset The asset you want to export
- * @return An asset export session initialized to export `asset`.
+ * @return An asset export session initialized to export `asset`. Only nullable for compatibility and never actually returns `nil`.
  */
-+ (id)exportSessionWithAsset:(AVAsset *)asset;
++ (nullable id)exportSessionWithAsset:(AVAsset *)asset;
 
 /**
  * Initializes an asset export session with a specified asset.
  *
  * @param asset The asset you want to export
- * @return An asset export session initialized to export `asset`.
+ * @return An asset export session initialized to export `asset`. Only nullable for compatibility and never actually returns `nil`.
  */
-- (id)initWithAsset:(AVAsset *)asset;
+- (nullable id)initWithAsset:(AVAsset *)asset;
 
 /**
  * Starts the asynchronous execution of an export session.
@@ -192,3 +193,5 @@
 - (void)exportSession:(SDAVAssetExportSession *)exportSession renderFrame:(CVPixelBufferRef)pixelBuffer withPresentationTime:(CMTime)presentationTime toBuffer:(CVPixelBufferRef)renderBuffer;
 
 @end
+
+NS_ASSUME_NONNULL_END
