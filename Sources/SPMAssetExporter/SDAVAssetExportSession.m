@@ -10,7 +10,6 @@
 // file that was distributed with this source code.
 //
 
-
 #import "SDAVAssetExportSession.h"
 
 @interface SDAVAssetExportSession ()
@@ -168,7 +167,7 @@
             [self.writer addInput:self.audioInput];
         }
     }
-    
+
     [self.writer startWriting];
     [self.reader startReading];
     [self.writer startSessionAtSourceTime:self.timeRange.start];
@@ -196,7 +195,7 @@
     else {
         videoCompleted = YES;
     }
-    
+
     if (!self.audioOutput) {
         audioCompleted = YES;
     } else {
@@ -232,7 +231,7 @@
                 handled = YES;
                 error = YES;
             }
-            
+
             if (!handled && self.videoOutput == output)
             {
                 // update the video progress
