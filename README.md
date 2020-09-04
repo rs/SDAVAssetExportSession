@@ -10,23 +10,22 @@ You want the ease of use of `AVAssetExportSession` but default provided presets 
 
 Usage Example
 -------------
-For Objective-C:
-
+For ObjC:
 ``` objective-c
 SDAVAssetExportSession *encoder = [SDAVAssetExportSession.alloc initWithAsset:anAsset];
 encoder.outputFileType = AVFileTypeMPEG4;
 encoder.outputURL = outputFileURL;
 encoder.videoSettings = @
-{
-  AVVideoCodecKey: AVVideoCodecH264,
-  AVVideoWidthKey: @1920,
-  AVVideoHeightKey: @1080,
-  AVVideoCompressionPropertiesKey: @
-    {
-      AVVideoAverageBitRateKey: @6000000,
-      AVVideoProfileLevelKey: AVVideoProfileLevelH264High40,
-    },
-};
+  {
+    AVVideoCodecKey: AVVideoCodecH264,
+    AVVideoWidthKey: @1920,
+    AVVideoHeightKey: @1080,
+    AVVideoCompressionPropertiesKey: @
+      {
+        AVVideoAverageBitRateKey: @6000000,
+        AVVideoProfileLevelKey: AVVideoProfileLevelH264High40,
+      },
+  };
 encoder.audioSettings = @
 {
   AVFormatIDKey: @(kAudioFormatMPEG4AAC),
@@ -55,7 +54,15 @@ encoder.audioSettings = @
 
 And for Swift:
 
+* add the package to your Xcode project (https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app)
+* import package
+* use it in swift code like
+
 ```swift
+import SPMAssetExporter
+
+// ...
+
 let exporter = SDAVAssetExportSession(asset: asset)!
 exporter.outputFileType = processingParameters.outputFileType.rawValue
 exporter.outputURL = processingParameters.outputUrl
@@ -63,7 +70,7 @@ exporter.videoSettings = [
   AVVideoCodecKey: AVVideoCodecType.h264,
   AVVideoWidthKey: targetSize.width,
   AVVideoHeightKey: targetSize.height,
-  AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 1024_000, AVVideoProfileLevelKey: AVVideoProfileLevelH264High40]
+  AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 1024_000,AVVideoProfileLevelKey: AVVideoProfileLevelH264High40]
 ]
 exporter.audioSettings = [
   AVFormatIDKey: kAudioFormatMPEG4AAC,
@@ -74,8 +81,8 @@ exporter.audioSettings = [
 exporter.videoComposition = videoComposition
 
 exporter.exportAsynchronously(completionHandler: {
-  switch exporter.status {
-  // do your work here
+  switch encoder.status {
+    // do your work here
   }
 })
 ```
